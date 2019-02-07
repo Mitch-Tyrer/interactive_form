@@ -4,7 +4,14 @@ $('#name').focus();
 $('#role').hide();
 
 // Add a statement to show role input when Other is selected
-
+$('#title').on('change', (e) => {
+    // if option value is other show input element
+    if($(e.target).val() === 'other'){
+        $('#role').show();
+    } else {
+        $('#role').hide();
+    }
+});
 
 //t-shirt selectors
 $('#design').on('change', (e) => {
