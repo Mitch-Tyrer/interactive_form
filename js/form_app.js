@@ -17,12 +17,10 @@ $('#title').on('change', (e) => {
 $('#design').on('change', (e) => {
     //value of selection
     const $theme = $(e.target).find('option:selected').text();
-    console.log($theme);
     //color selector - hide children
     const $colors = $('#color').children();
     $colors.hide();
     $colors.removeAttr("selected");
-    console.log($colors)
     // if theme is puns - show only those colors - else only show hearts
     if($theme === "Theme - JS Puns"){
         $colors.eq(0).attr("selected", "selected");
@@ -37,8 +35,41 @@ $('#design').on('change', (e) => {
     }
 });
 
+    
+
 
 // Activities
+    //check box handler
+   $('.activities').on('change', (e) => {
+        //text of target
+       const text = $(e.target).parent().text();
+        console.log(text)
+        // regex to find the times in the strings
+        const dayRegEx = /\b(Wednesday|Tuesday)/
+        const timeRegEx = /\b((?:1[0-2]|[1-9])[ap]m)-((?:1[0-2]|[1-9])[ap]m)/ //found this on stackOverflow when I couldn't get my own to select both times
+        //storage of those times
+        let eventDay = text.match(dayRegEx)[0];
+        let eventTime = text.match(timeRegEx)[0];
+        let activity = `${eventDay} ${eventTime}`;
+        console.log(activity);
+        //loop through all the activity labels and retrieve their times and compare to the selected item
+        const otherEvents = $('.activities label');
+         $.each(otherEvents, (i, el) => {
+            const otherText = $(el).text();
+            const otherDay = otherText.match(dayRegEx);
+            const otherTime = otherText.match(timeRegEx);
+            console.log(otherDay, otherTime);
+
+            if( activity === otherDay && activity === otherTime ){
+                $(el).attr('disabled', true);
+            } else {
+                $(el).attr('disabled', false);
+            } 
+
+        });
+    });
+
+
     //IF the user selects an activity that is at the same time as another, disable the conflicting checkbox
     //if unchecked, turn the conflicting checkboxes back on
     //As activities are selected, update a total price under the list of checkboxes
