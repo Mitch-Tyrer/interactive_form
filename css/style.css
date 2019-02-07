@@ -94,6 +94,7 @@ input:focus {
 	background: #fff;
 	border-color: #5e97b0;
 	transition: border-color .4s, background-color .4s;
+	
 }
 
 input[type="checkbox"],
