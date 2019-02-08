@@ -99,6 +99,7 @@ input:focus {
 
 .error{
 	color: #D8000C;
+	font-size: .80rem;
 	background-color: #FFBABA;
 	margin: 0.5rem;
 }

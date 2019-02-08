@@ -28,8 +28,15 @@ const getPrices = (str) => {
 
 // On load, focus on the first text field
 $('#name').focus();
+// Add an id to form for targeting
+$('form').attr('id', 'order-form')
 // Add a job title input into the HTML, hide it to start and only show it when the other option is selected
 $('#role').hide();
+
+//reset border on input 
+$('form input').on('focus', (e) => {
+    $(e.target).removeAttr('style');
+});
 
 // Add a statement to show role input when Other is selected
 $('#title').on('change', (e) => {
@@ -89,8 +96,6 @@ $('.activities').on('change', (e) => {
         }
 
         //loop through all the activity labels and retrieve their times and compare to the selected item
-
-
         for (let i = 1; i < eventDesc.length; i++) {
             let otherTime = getTimes(eventDesc[i]);
             let checkbox = eventList[i].children;
@@ -118,7 +123,9 @@ $('.activities').on('change', (e) => {
 
 //Payment
 
-//variables for each element
+// BUG -  Changing payment options causes error messages to append multiple times on credit card inputs
+
+//variables for each option
 const $method = $('#payment').children();
 const $credit = $('#credit-card');
 const $payPal = $('div p:first');
@@ -150,58 +157,103 @@ $('#payment').on('change', (e) => {
     }
 });
 
-// function to create error divs for validation
-const errorDiv = (parent, text) => {
-    const newDiv = $(parent).before(`<div class="error">${text}</div>`);
-    return newDiv
+// function to create error spans for validation
+const errorSpan = (parent, text) => {
+    const newSpan = $(parent).prev().append(`<span class="error">${text}</span>`);
+    return newSpan
 }
 
-//Validation - can't submit if any of these cases are true
-    //insert error message divs
-    errorDiv('#name','Please enter a name');
-    errorDiv('#mail', "Please enter a valid email");
-    errorDiv('.activities legend', "Please Choose at least One Event");
-    errorDiv('#cc-num', "Enter Valid Credit Card Number");
-    errorDiv('#zip', "Enter Zipcode");
-    errorDiv('#cvv', "Enter Card CVV");
+//function to remove error spans
+const removeError = (target, parent, element) => {
+    target.prev(parent).find(element).remove();
+}
 
-    //select new error divs and hide them
-    let $error = $('.error');
-    $error.hide();
+
+
+//Validation - can't submit if any of these cases are true
 
 
     //Name Field can't be blank
-    $('#name').on('input', (e) =>{
+    $('#name').on('input blur', (e) =>{
         let $input = $(e.target);
-        if($input.val()){
-            $input.removeAttr('style');
-            $error.eq(0).hide();
+        if(!$input.val()){
+            $input.css({'border': 'solid 2px red'}).addClass('invalid');
+                if($input.prev().find('span').length === 0){
+                    errorSpan('#name', 'Please enter a name')
+                }            
         } else {
-            $input.css({'border': 'solid 2px red'});
-            $error.eq(0).show();
+            $input.removeAttr('style').removeClass('invalid');
+            removeError($input,'label','span');
         }
     });
     
     
     //email must have a valid email - formatted 
-    $('#mail').on('change', (e) => {
+    $('#mail').on('change blur', (e) => {
         let $input = $(e.target);
         //regex found on regextester.com
-        let emailRegEx = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+        let emailRegEx = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
         if(!emailRegEx.test($input.val())){
-            $input.css({'border': 'solid 2px red'});
-            $error.eq(1).show();
+            $input.css({'border': 'solid 2px red'}).addClass('invalid');
+            if($input.prev().find('span').length === 0){
+                errorSpan('#mail', "Please enter a valid email");
+            }
         } else {
-            $input.removeAttr('style');
-            $error.eq(1).hide();
+            $input.removeAttr('style').removeClass('invalid');
+            removeError($input,'label','span');
         }
     });
+
+    //IF credit card is payment method
+    $($credit).on('change blur', (e) => {
+        let $input = $(e.target);
+        const ccNum = $('#cc-num').val();
+        const zip = $('#zip').val();
+        const cvv = $('#cvv').val();
+        const ccRegEx = /^\d{13,16}$/
+        const zipRegEx =/^\d{5}$/
+        const cvvRegEx = /^\d{3}$/
+        //CC should only accept numbers between 13 and 16 digits
+        if(!ccRegEx.test(ccNum)){
+            $input.css({'border': 'solid 2px red'}).addClass('invalid');
+            if($input.prev().find('span').length === 0){
+                errorSpan('#cc-num', "Enter Valid Credit Card Number");
+            }
+        } else {
+            $input.removeAttr('style').removeClass('invalid');
+            removeError($input,'label','span');
+        }
+        //Zip should accept a 5 digit number
+        if(!zipRegEx.test(zip)){
+            $input.css({'border': 'solid 2px red'}).addClass('invalid')
+            if($input.prev().find('span').length === 0){
+                errorSpan('#zip', 'Invalid Zipcode');
+            }
+        } else {
+            $input.removeAttr('style').removeClass('invalid');
+            removeError($input,'label','span');
+        }
+        //CVV should only accept exactly a 3 digit number\
+        if(!cvvRegEx.test(cvv)){
+            $input.css({'border': 'solid 2px red'}).addClass('invalid')
+            if($input.prev().find('span').length === 0){
+                errorSpan('#cvv', 'Invalid CVV');
+            }
+        } else {
+            $input.removeAttr('style').removeClass('invalid');
+            removeError($input,'label','span');
+        }
+  
+    });
+        
+        
+        
+
+
     //must select at least one check box in activities
     
-    //IF credit card is payment method
-        //CC should only accept numbers between 13 and 16 digits
-        //Zip should accept a 5 digit number
-        //CVV should only accept exactly a 3 digit number
+
+    
 
 //Validation Messages
     //Indicate when there is a validation error
