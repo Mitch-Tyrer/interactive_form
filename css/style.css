@@ -97,6 +97,12 @@ input:focus {
 	
 }
 
+.error{
+	color: #D8000C;
+	background-color: #FFBABA;
+	margin: 0.5rem;
+}
+
 input[type="checkbox"],
 input[type="radio"] {
 	display: inline-block;

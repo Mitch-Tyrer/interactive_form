@@ -78,11 +78,18 @@ $('.activities').on('change', (e) => {
         let selectedDay = text.match(dayRegEx)[0];
         let selectedTime = text.match(timeRegEx)[0];
         let activity = `${selectedDay} ${selectedTime}`;
-        //update price
-        total += 100;
-        //loop through all the activity labels and retrieve their times and compare to the selected item
         const eventList = document.querySelectorAll('.activities label');
         const eventDesc = getEvents(eventList);
+
+        //update price
+        if ($(e.target).prop('checked')) {
+            total += 100;
+        } else {
+            total -= 100;
+        }
+
+        //loop through all the activity labels and retrieve their times and compare to the selected item
+
 
         for (let i = 1; i < eventDesc.length; i++) {
             let otherTime = getTimes(eventDesc[i]);
@@ -98,7 +105,11 @@ $('.activities').on('change', (e) => {
             }
         }
     } else {
-        total += 200;
+        if ($(e.target).prop('checked')) {
+            total += 200;
+        } else {
+            total -= 200;
+        }
     }
     // Add totals to bottom div based on selections
     $('#price').text('$' + total);
@@ -112,39 +123,81 @@ const $method = $('#payment').children();
 const $credit = $('#credit-card');
 const $payPal = $('div p:first');
 const $bitCoin = $('div p:last');
-    //display sections based on option selected
-    //Credit Card should be selected by default
-    $method.eq(1).prop("selected", true);
-    $payPal.hide();
-    $bitCoin.hide();
-    //User shouldn't select the select payment method option in the select element
-    $method.eq(0).prop("disabled", true);
-        //display #credit-card div and hide the paypal and bitcoin info
+//display sections based on option selected
+//Credit Card should be selected by default
+$method.eq(1).prop("selected", true);
+$payPal.hide();
+$bitCoin.hide();
+//User shouldn't select the select payment method option in the select element
+$method.eq(0).prop("disabled", true);
+//display #credit-card div and hide the paypal and bitcoin info
 $('#payment').on('change', (e) => {
-    
-    if($(e.target).val() === "credit card"){
+
+    if ($(e.target).val() === "credit card") {
         $credit.show();
         $payPal.hide();
         $bitCoin.hide();
-    } else if ($(e.target).val() === "paypal"){
+    } else if ($(e.target).val() === "paypal") {
         //If paypal is selected show paypal, hide others
         $credit.hide();
         $payPal.show();
         $bitCoin.hide();
-    } else if ($(e.target).val() === "bitcoin"){
+    } else if ($(e.target).val() === "bitcoin") {
         //if bitcoin is selected show bitcooin, hide others
         $credit.hide();
         $payPal.hide();
         $bitCoin.show();
     }
 });
-    
-    
+
+// function to create error divs for validation
+const errorDiv = (parent, text) => {
+    const newDiv = $(parent).before(`<div class="error">${text}</div>`);
+    return newDiv
+}
 
 //Validation - can't submit if any of these cases are true
+    //insert error message divs
+    errorDiv('#name','Please enter a name');
+    errorDiv('#mail', "Please enter a valid email");
+    errorDiv('.activities legend', "Please Choose at least One Event");
+    errorDiv('#cc-num', "Enter Valid Credit Card Number");
+    errorDiv('#zip', "Enter Zipcode");
+    errorDiv('#cvv', "Enter Card CVV");
+
+    //select new error divs and hide them
+    let $error = $('.error');
+    $error.hide();
+
+
     //Name Field can't be blank
-    //email must have a valid email - formatted properly
+    $('#name').on('input', (e) =>{
+        let $input = $(e.target);
+        if($input.val()){
+            $input.removeAttr('style');
+            $error.eq(0).hide();
+        } else {
+            $input.css({'border': 'solid 2px red'});
+            $error.eq(0).show();
+        }
+    });
+    
+    
+    //email must have a valid email - formatted 
+    $('#mail').on('change', (e) => {
+        let $input = $(e.target);
+        //regex found on regextester.com
+        let emailRegEx = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+        if(!emailRegEx.test($input.val())){
+            $input.css({'border': 'solid 2px red'});
+            $error.eq(1).show();
+        } else {
+            $input.removeAttr('style');
+            $error.eq(1).hide();
+        }
+    });
     //must select at least one check box in activities
+    
     //IF credit card is payment method
         //CC should only accept numbers between 13 and 16 digits
         //Zip should accept a 5 digit number
