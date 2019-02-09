@@ -155,7 +155,7 @@ $bitCoin.hide();
 $method.eq(0).prop("disabled", true);
 //display #credit-card div and hide the paypal and bitcoin info
 $('#payment').on('change', (e) => {
-
+    $($credit).find('input').removeClass('invalid');
     if ($(e.target).val() === "credit card") {
         $credit.show();
         $payPal.hide();
@@ -275,6 +275,7 @@ $($credit).on('input blur', (e) => {
         if (e.target.id === 'cc-num') {
             //CC should only accept numbers between 13 and 16 digits
             if($input.val().length < 13 || $input.val().length > 16){
+                $input.css({ 'border': 'solid 2px red' }).addClass('invalid');
                 if ($input.prev().find('span').length === 0){
                 errorSpan($input, "Number should be between 13 and 16")
                 }
@@ -320,13 +321,12 @@ $('#order-form').submit((event) => {
     //must select at least one check box in activities
     const $activity = $('.activities label');
     validateActivity($activity);
-    console.log($activity.prev().first().find('span').hasClass('error'))
     // if each input failed validation they will have a class of invalid
     //if any of the inputs have that class the form won't submit because .hasClass will return true if the class exists
     //activities required finding the appended span which has a class of error
     if ($name.hasClass('invalid') ||
         $email.hasClass('invalid') ||
-        $('#ccNum').hasClass('invalid') ||
+        $('#cc-num').hasClass('invalid') ||
         $('#zip').hasClass('invalid') ||
         $('#cvv').hasClass('invalid') ||
         $activity.prev().first().find('span').hasClass('error')) {
@@ -335,7 +335,7 @@ $('#order-form').submit((event) => {
            if ($('button').prev().find('span').length <= 3) {
                 errorSpan($('button'), 'Please Fill in Missing information');
            }
-
+        
     }
 });
 
