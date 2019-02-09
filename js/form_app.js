@@ -3,6 +3,14 @@ const dayRegEx = /\b(Wednesday|Tuesday)/;
 const timeRegEx = /\b((?:1[0-2]|[1-9])[ap]m)-((?:1[0-2]|[1-9])[ap]m)/; //found this on stackOverflow when I couldn't get my own to select both times
 // Regex for Price Function
 const priceRegEx = /\d+$/m;
+//payment regex
+const ccRegEx = /^\d{13,16}$/
+const zipRegEx = /^\d{5}$/
+const cvvRegEx = /^\d{3}$/
+//email regex
+//regex found on regextester.com
+let emailRegEx = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
 // functions to find matches in an event list.
 const getEvents = (arr) => {
     let eventArr = [];
@@ -132,7 +140,7 @@ const $payPal = $('div p:first');
 const $bitCoin = $('div p:last');
 //display sections based on option selected
 //Credit Card should be selected by default
-$method.eq(1).prop("selected", true);
+$method.eq(1).attr("selected", true);
 $payPal.hide();
 $bitCoin.hide();
 //User shouldn't select the select payment method option in the select element
@@ -146,11 +154,13 @@ $('#payment').on('change', (e) => {
         $bitCoin.hide();
     } else if ($(e.target).val() === "paypal") {
         //If paypal is selected show paypal, hide others
+        $method.eq(1).attr("selected", false);
         $credit.hide();
         $payPal.show();
         $bitCoin.hide();
     } else if ($(e.target).val() === "bitcoin") {
         //if bitcoin is selected show bitcooin, hide others
+        $method.eq(1).attr("selected", false);
         $credit.hide();
         $payPal.hide();
         $bitCoin.show();
@@ -170,97 +180,137 @@ const removeError = (target, parent, element) => {
 
 
 
+//Validation functions
+
+const validateName = (target) => {
+    if (!target.val()) {
+        target.css({ 'border': 'solid 2px red' }).addClass('invalid');
+        if (target.prev().find('span').length === 0) {
+            errorSpan('#name', 'Please enter a name')
+        }
+    } else {
+        target.removeAttr('style').removeClass('invalid');
+        removeError(target, 'label', 'span');
+    }
+}
+
+const validateEmail = (target) => {
+    if (!emailRegEx.test(target.val())) {
+        target.css({ 'border': 'solid 2px red' }).addClass('invalid');
+        if (target.prev().find('span').length === 0) {
+            errorSpan('#mail', "Please enter a valid email");
+        }
+    } else {
+        target.removeAttr('style').removeClass('invalid');
+        removeError(target, 'label', 'span');
+    }
+}
+
+const validatePayment = (target, regEx, value, el, msg) => {
+    //test the appropriate regex with the string
+    if (!regEx.test(value)) {
+        //add border if target of event if invalid
+        target.css({ 'border': 'solid 2px red' }).addClass('invalid');
+        //if no message is present add one - declaring what needs to be valid in the listener for event
+        if (target.prev().find('span').length === 0) {
+            errorSpan(el, "Enter Valid " + msg);
+        }
+    } else {
+        //if input is valid, remove styles and the message element
+        target.removeAttr('style').removeClass('invalid');
+        removeError(target, 'label', 'span');
+    }
+}
+
+const validateActivity = (target) => {
+    if (target.find('input[type="checkbox"]:checked').length === 0) {
+        errorSpan($('.activities label:first'), "Please select at least one event");
+}
+}
+
 //Validation - can't submit if any of these cases are true
 
 
-    //Name Field can't be blank
-    $('#name').on('input blur', (e) =>{
-        let $input = $(e.target);
-        if(!$input.val()){
-            $input.css({'border': 'solid 2px red'}).addClass('invalid');
-                if($input.prev().find('span').length === 0){
-                    errorSpan('#name', 'Please enter a name')
-                }            
-        } else {
-            $input.removeAttr('style').removeClass('invalid');
-            removeError($input,'label','span');
-        }
-    });
-    
-    
-    //email must have a valid email - formatted 
-    $('#mail').on('change blur', (e) => {
-        let $input = $(e.target);
-        //regex found on regextester.com
-        let emailRegEx = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-        if(!emailRegEx.test($input.val())){
-            $input.css({'border': 'solid 2px red'}).addClass('invalid');
-            if($input.prev().find('span').length === 0){
-                errorSpan('#mail', "Please enter a valid email");
-            }
-        } else {
-            $input.removeAttr('style').removeClass('invalid');
-            removeError($input,'label','span');
-        }
-    });
+//Name Field can't be blank
+$('#name').on('input blur', (e) => {
+    let $input = $(e.target);
+    validateName($input);
+});
 
-    //IF credit card is payment method
-    $($credit).on('change blur', (e) => {
+
+//email must have a valid email - formatted 
+$('#mail').on('change blur', (e) => {
+    let $input = $(e.target);
+    validateEmail($input);
+});
+
+
+//IF credit card is payment method
+$($credit).on('change blur', (e) => {
+    //if the credit card method is selected
+    if ($('#payment option[value="credit card"]').is(':selected') === true) {
         let $input = $(e.target);
         const ccNum = $('#cc-num').val();
         const zip = $('#zip').val();
         const cvv = $('#cvv').val();
-        const ccRegEx = /^\d{13,16}$/
-        const zipRegEx =/^\d{5}$/
-        const cvvRegEx = /^\d{3}$/
-        //CC should only accept numbers between 13 and 16 digits
-        if(!ccRegEx.test(ccNum)){
-            $input.css({'border': 'solid 2px red'}).addClass('invalid');
-            if($input.prev().find('span').length === 0){
-                errorSpan('#cc-num', "Enter Valid Credit Card Number");
-            }
-        } else {
-            $input.removeAttr('style').removeClass('invalid');
-            removeError($input,'label','span');
+        console.log(e.target.id);
+        if (e.target.id === 'cc-num') {
+            //CC should only accept numbers between 13 and 16 digits
+            let msg = "Credit Card"
+            validatePayment($input, ccRegEx, ccNum, '#cc-num', msg);
+        } else if (e.target.id === 'zip') {
+            //Zip should accept a 5 digit number
+            let msg = "Zip Code"
+            validatePayment($input, zipRegEx, zip, '#zip', msg);
+        } else if (e.target.id === 'cvv') {
+            //CVV should only accept exactly a 3 digit number
+            let msg = "CVV Code"
+            validatePayment($input, cvvRegEx, cvv, '#cvv', msg);
         }
-        //Zip should accept a 5 digit number
-        if(!zipRegEx.test(zip)){
-            $input.css({'border': 'solid 2px red'}).addClass('invalid')
-            if($input.prev().find('span').length === 0){
-                errorSpan('#zip', 'Invalid Zipcode');
-            }
-        } else {
-            $input.removeAttr('style').removeClass('invalid');
-            removeError($input,'label','span');
-        }
-        //CVV should only accept exactly a 3 digit number\
-        if(!cvvRegEx.test(cvv)){
-            $input.css({'border': 'solid 2px red'}).addClass('invalid')
-            if($input.prev().find('span').length === 0){
-                errorSpan('#cvv', 'Invalid CVV');
-            }
-        } else {
-            $input.removeAttr('style').removeClass('invalid');
-            removeError($input,'label','span');
-        }
-  
-    });
-        
-        
-        
+
+    }
+});
 
 
+
+
+
+// Check each field on a submit to see if they are filled out properly and apply error messages if they are not
+$('#order-form').submit((event) => {
+    // check name element
+    const $name = $('#name');
+    validateName($name);
+    //check email
+    const $email = $('#mail')
+    validateEmail($email);
+    //check payment input
+    if ($('#payment option[value="credit card"]').is(':selected') === true) {
+        const ccNum = $('#cc-num').val();
+        const zip = $('#zip').val();
+        const cvv = $('#cvv').val();
+        validatePayment($('#cc-num'), ccRegEx, ccNum, '#cc-num', "Credit Card");
+        validatePayment($('#zip'), zipRegEx, zip, '#zip', "Zip Code");
+        validatePayment($('#cvv'), cvvRegEx, cvv, '#cvv', "CVV Code");
+    }
     //must select at least one check box in activities
-    
+    const $activity = $('.activities label');
+    validateActivity($activity);
+    // if each input failed validation they will have a class of invalid
+    //if any of the inputs have that class the form won't submit
+        //activities required finding the appended span which has a class of error
+    if ($name.hasClass('invalid') ||
+        $email.hasClass('invalid') ||
+        $('#ccNum').hasClass('invalid') ||
+        $('#zip').hasClass('invalid') ||
+        $('#cvv').hasClass('invalid') ||
+        $activity.prev().first().find('span').hasClass('error')) {
+            event.preventDefault();
+                if ($('button').prev().find('span').length === 0) {
+                errorSpan($('button'), 'Please Fill in Missing information');
+        }
+    } 
+});
 
-    
 
-//Validation Messages
-    //Indicate when there is a validation error
-    // Obvious form of an error
-        //namefield
-        //emailfield
-        //at least one checkbox
-        //CC numbers if cc is payment method
-    //all errors should be hidden by default
+
 
