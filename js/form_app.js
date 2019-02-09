@@ -67,7 +67,7 @@ $('#design').on('change', (e) => {
     $colors.hide();
     $colors.removeAttr("selected");
     // if theme is puns - show only those colors - else only show hearts
-    if($theme === 'Select Theme'){
+    if ($theme === 'Select Theme') {
         $('#colors-js-puns').hide();
     } else if ($theme === "Theme - JS Puns") {
         //show the color selector
@@ -203,16 +203,22 @@ const validateName = (target) => {
 }
 
 const validateEmail = (target) => {
-    if (!emailRegEx.test(target.val())) {
-        target.css({ 'border': 'solid 2px red' }).addClass('invalid');
-        if (target.prev().find('span').length === 0) {
-            errorSpan('#mail', "Please enter a valid email");
+    removeError(target, 'label', 'span');   
+    if(target.val().length === 0){
+        if (target.prev().find('span').length === 0){
+        errorSpan('#mail', "Please enter a valid email");
         }
-    } else {
-        target.removeAttr('style').removeClass('invalid');
-        removeError(target, 'label', 'span');
-    }
-}
+    } else if (!emailRegEx.test(target.val()) && target.val().length !== 0) {
+            target.css({ 'border': 'solid 2px red' }).addClass('invalid');
+            if (target.prev().find('span').length === 0) {
+                errorSpan('#mail', "Email should contain an @ symbol");
+            }
+        } else {
+            target.removeAttr('style').removeClass('invalid');
+            removeError(target, 'label', 'span');
+        }   
+    }  
+
 
 const validatePayment = (target, regEx, value, el, msg) => {
     //test the appropriate regex with the string
@@ -226,14 +232,14 @@ const validatePayment = (target, regEx, value, el, msg) => {
     } else {
         //if input is valid, remove styles and the message element
         target.removeAttr('style').removeClass('invalid');
-        removeError(target, 'label', 'span'); 
+        removeError(target, 'label', 'span');
     }
 }
 
 const validateActivity = (target) => {
     let $first = $('.activities label:first')
     if (target.find('input[type="checkbox"]:checked').length === 0) {
-        if($first.prev().find('span').length === 0){
+        if ($first.prev().find('span').length === 0) {
             errorSpan($first, "Please select at least one event");
         }
     } else {
@@ -243,7 +249,6 @@ const validateActivity = (target) => {
 
 
 //Validation - can't submit if any of these cases are true
-
 
 //Name Field can't be blank
 $('#name').on('input blur', (e) => {
@@ -260,21 +265,23 @@ $('#mail').on('input blur', (e) => {
 
 
 //IF credit card is payment method
-$($credit).on('change blur', (e) => {
+$($credit).on('input blur', (e) => {
     //if the credit card method is selected
     if ($('#payment option[value="credit card"]').is(':selected') === true) {
         let $input = $(e.target);
-        console.log($input)
         const ccNum = $('#cc-num').val();
         const zip = $('#zip').val();
         const cvv = $('#cvv').val();
         if (e.target.id === 'cc-num') {
             //CC should only accept numbers between 13 and 16 digits
-            if($input.val() < 13 || $input.val() > 16){
-                errorSpan($input, "Card should be between 13 and 16 numbers")
+            if($input.val().length < 13 || $input.val().length > 16){
+                if ($input.prev().find('span').length === 0){
+                errorSpan($input, "Number should be between 13 and 16")
+                }
             } else {
-            let msg = "Credit Card"
-            validatePayment($input, ccRegEx, ccNum, '#cc-num', msg);
+                removeError($input, 'label', 'span')
+                let msg = "Credit Card"
+                validatePayment($input, ccRegEx, ccNum, '#cc-num', msg);
             }
         } else if (e.target.id === 'zip') {
             //Zip should accept a 5 digit number
@@ -316,17 +323,19 @@ $('#order-form').submit((event) => {
     console.log($activity.prev().first().find('span').hasClass('error'))
     // if each input failed validation they will have a class of invalid
     //if any of the inputs have that class the form won't submit because .hasClass will return true if the class exists
-        //activities required finding the appended span which has a class of error
-    if ($name.hasClass('invalid')  ||
+    //activities required finding the appended span which has a class of error
+    if ($name.hasClass('invalid') ||
         $email.hasClass('invalid') ||
         $('#ccNum').hasClass('invalid') ||
         $('#zip').hasClass('invalid') ||
         $('#cvv').hasClass('invalid') ||
-        $activity.prev().first().find('span').hasClass('error')) { 
-            event.preventDefault();
-                /* if ($('button').prev().find('span').length === 0) {
-                errorSpan($('button'), 'Please Fill in Missing information'); 
-        } */
-    } 
+        $activity.prev().first().find('span').hasClass('error')) {
+        event.preventDefault();
+        //errorSpan() places the message in the previous element, 
+           if ($('button').prev().find('span').length <= 3) {
+                errorSpan($('button'), 'Please Fill in Missing information');
+           }
+
+    }
 });
 
