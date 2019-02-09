@@ -57,6 +57,8 @@ $('#title').on('change', (e) => {
 });
 
 //t-shirt selectors
+//hide color selector on load
+$('#colors-js-puns').hide();
 $('#design').on('change', (e) => {
     //value of selection
     const $theme = $(e.target).find('option:selected').text();
@@ -65,12 +67,20 @@ $('#design').on('change', (e) => {
     $colors.hide();
     $colors.removeAttr("selected");
     // if theme is puns - show only those colors - else only show hearts
-    if ($theme === "Theme - JS Puns") {
+    if($theme === 'Select Theme'){
+        $('#colors-js-puns').hide();
+    } else if ($theme === "Theme - JS Puns") {
+        //show the color selector
+        $('#colors-js-puns').show();
+        //show only the selected colors based on theme
         $colors.eq(0).attr("selected", "selected");
         $colors.each((i, el) => {
             i <= 2 ? $(el).show() : $(el).hide();
         });
     } else {
+        //show the color selector
+        $('#colors-js-puns').show();
+        //show only the colors based on theme
         $colors.eq(3).attr("selected", "selected");
         $colors.each((i, el) => {
             i >= 3 ? $(el).show() : $(el).hide();
@@ -130,8 +140,6 @@ $('.activities').on('change', (e) => {
 
 
 //Payment
-
-// BUG -  Changing payment options causes error messages to append multiple times on credit card inputs
 
 //variables for each option
 const $method = $('#payment').children();
@@ -218,7 +226,7 @@ const validatePayment = (target, regEx, value, el, msg) => {
     } else {
         //if input is valid, remove styles and the message element
         target.removeAttr('style').removeClass('invalid');
-        removeError(target, 'label', 'span');
+        removeError(target, 'label', 'span'); 
     }
 }
 
@@ -245,7 +253,7 @@ $('#name').on('input blur', (e) => {
 
 
 //email must have a valid email - formatted 
-$('#mail').on('change blur', (e) => {
+$('#mail').on('input blur', (e) => {
     let $input = $(e.target);
     validateEmail($input);
 });
@@ -256,14 +264,18 @@ $($credit).on('change blur', (e) => {
     //if the credit card method is selected
     if ($('#payment option[value="credit card"]').is(':selected') === true) {
         let $input = $(e.target);
+        console.log($input)
         const ccNum = $('#cc-num').val();
         const zip = $('#zip').val();
         const cvv = $('#cvv').val();
-        console.log(e.target.id);
         if (e.target.id === 'cc-num') {
             //CC should only accept numbers between 13 and 16 digits
+            if($input.val() < 13 || $input.val() > 16){
+                errorSpan($input, "Card should be between 13 and 16 numbers")
+            } else {
             let msg = "Credit Card"
             validatePayment($input, ccRegEx, ccNum, '#cc-num', msg);
+            }
         } else if (e.target.id === 'zip') {
             //Zip should accept a 5 digit number
             let msg = "Zip Code"
