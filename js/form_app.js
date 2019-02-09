@@ -310,14 +310,11 @@ $('#order-form').submit((event) => {
         $('#ccNum').hasClass('invalid') ||
         $('#zip').hasClass('invalid') ||
         $('#cvv').hasClass('invalid') ||
-        $activity.prev().first().find('span').hasClass('error')) { // NEED TO REMOVE THE ERROR SPAN IN FUNCTION, SO THIS DOESN'T TRIGGER ON RESUBMIt
+        $activity.prev().first().find('span').hasClass('error')) { 
             event.preventDefault();
                 /* if ($('button').prev().find('span').length === 0) {
                 errorSpan($('button'), 'Please Fill in Missing information'); 
         } */
     } 
 });
-
-
-
 
