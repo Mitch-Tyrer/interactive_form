@@ -223,10 +223,16 @@ const validatePayment = (target, regEx, value, el, msg) => {
 }
 
 const validateActivity = (target) => {
+    let $first = $('.activities label:first')
     if (target.find('input[type="checkbox"]:checked').length === 0) {
-        errorSpan($('.activities label:first'), "Please select at least one event");
+        if($first.prev().find('span').length === 0){
+            errorSpan($first, "Please select at least one event");
+        }
+    } else {
+        removeError(target, 'legend', 'span');
+    }
 }
-}
+
 
 //Validation - can't submit if any of these cases are true
 
@@ -295,19 +301,20 @@ $('#order-form').submit((event) => {
     //must select at least one check box in activities
     const $activity = $('.activities label');
     validateActivity($activity);
+    console.log($activity.prev().first().find('span').hasClass('error'))
     // if each input failed validation they will have a class of invalid
-    //if any of the inputs have that class the form won't submit
+    //if any of the inputs have that class the form won't submit because .hasClass will return true if the class exists
         //activities required finding the appended span which has a class of error
-    if ($name.hasClass('invalid') ||
+    if ($name.hasClass('invalid')  ||
         $email.hasClass('invalid') ||
         $('#ccNum').hasClass('invalid') ||
         $('#zip').hasClass('invalid') ||
         $('#cvv').hasClass('invalid') ||
-        $activity.prev().first().find('span').hasClass('error')) {
+        $activity.prev().first().find('span').hasClass('error')) { // NEED TO REMOVE THE ERROR SPAN IN FUNCTION, SO THIS DOESN'T TRIGGER ON RESUBMIt
             event.preventDefault();
-                if ($('button').prev().find('span').length === 0) {
-                errorSpan($('button'), 'Please Fill in Missing information');
-        }
+                /* if ($('button').prev().find('span').length === 0) {
+                errorSpan($('button'), 'Please Fill in Missing information'); 
+        } */
     } 
 });
 
