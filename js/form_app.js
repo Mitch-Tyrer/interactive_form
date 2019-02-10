@@ -211,7 +211,11 @@ const validateEmail = (target) => {
     } else if (!emailRegEx.test(target.val()) && target.val().length !== 0) {
             target.css({ 'border': 'solid 2px red' }).addClass('invalid');
             if (target.prev().find('span').length === 0) {
-                errorSpan('#mail', "Email should contain an @ symbol");
+                if(target.val().indexOf('@') <= 0){
+                    errorSpan('#mail', "Email should contain an @ symbol");                    
+                } else if(target.val().indexOf('.') <= 0) {
+                    errorSpan('#mail', "Make sure email has a domain");
+                }
             }
         } else {
             target.removeAttr('style').removeClass('invalid');
@@ -243,10 +247,21 @@ const validateActivity = (target) => {
             errorSpan($first, "Please select at least one event");
         }
     } else {
-        removeError(target, 'legend', 'span');
+        removeError($first, 'legend', 'span');
     }
 }
 
+// Function to make sure all inputs with an ID are not empty
+const checkInputs = (formInputs) => {
+    const $inputs = $(formInputs)
+    $inputs.each((i, el) => {
+        if($(el).prop('id') !== undefined) {
+            if($(el).val().length === 0 ){
+                $(el).css({ 'border': 'solid 2px red' }).addClass('invalid');
+            }
+        }
+    });
+}
 
 //Validation - can't submit if any of these cases are true
 
@@ -261,6 +276,11 @@ $('#name').on('input blur', (e) => {
 $('#mail').on('input blur', (e) => {
     let $input = $(e.target);
     validateEmail($input);
+});
+
+$('.activities input').on('change', (e) => {
+    const $activity = $('.activities label');
+    validateActivity($activity);
 });
 
 
@@ -299,7 +319,8 @@ $($credit).on('input blur', (e) => {
 
 
 
-
+const submitError = errorSpan($('button'), 'Please Fill in Missing information');
+submitError.find('span').hide();
 
 // Check each field on a submit to see if they are filled out properly and apply error messages if they are not
 $('#order-form').submit((event) => {
@@ -307,7 +328,7 @@ $('#order-form').submit((event) => {
     const $name = $('#name');
     validateName($name);
     //check email
-    const $email = $('#mail')
+    const $email = $('#mail');
     validateEmail($email);
     //check payment input
     if ($('#payment option[value="credit card"]').is(':selected') === true) {
@@ -324,18 +345,23 @@ $('#order-form').submit((event) => {
     // if each input failed validation they will have a class of invalid
     //if any of the inputs have that class the form won't submit because .hasClass will return true if the class exists
     //activities required finding the appended span which has a class of error
+    checkInputs($('#order-form input'));
     if ($name.hasClass('invalid') ||
         $email.hasClass('invalid') ||
         $('#cc-num').hasClass('invalid') ||
         $('#zip').hasClass('invalid') ||
         $('#cvv').hasClass('invalid') ||
         $activity.prev().first().find('span').hasClass('error')) {
-        event.preventDefault();
+
+            event.preventDefault();
+            submitError.find('span').show();
         //errorSpan() places the message in the previous element, 
-           if ($('button').prev().find('span').length <= 3) {
+       /*     if ($('button').prev().find('span').length <= 3) {
                 errorSpan($('button'), 'Please Fill in Missing information');
            }
-        
+         */
+    } else {
+        submitError.find('span').hide();
     }
 });
 
